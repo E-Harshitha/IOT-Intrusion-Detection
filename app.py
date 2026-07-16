@@ -1,6 +1,8 @@
 import streamlit as st
 import pandas as pd
 import joblib
+import os
+import gdown
 
 # -----------------------
 # Page Configuration
@@ -12,20 +14,37 @@ st.set_page_config(
 )
 
 # -----------------------
+# Download Model from Google Drive
+# -----------------------
+
+MODEL_ID = "1FsiJAG3W_UzV4fzutHv9hjwFtfwSr8jd"
+
+if not os.path.exists("best_model.pkl"):
+    url = f"https://drive.google.com/uc?id={MODEL_ID}"
+    with st.spinner("Downloading trained model... Please wait."):
+        gdown.download(url, "best_model.pkl", quiet=False)
+
+# -----------------------
 # Load Model
 # -----------------------
+
 model = joblib.load("best_model.pkl")
 label_encoder = joblib.load("label_encoder.pkl")
 
-st.title("🛡️ IoT Network Intrusion Detection")
-st.markdown("### Multi-Class Attack Prediction")
+# -----------------------
+# Title
+# -----------------------
 
-st.write("Enter the network traffic details below.")
+st.title("🛡️ IoT Network Intrusion Detection System")
+
+st.markdown("### Multi-Class Intrusion Detection")
+
+st.write("Enter the network traffic features below and click **Predict Attack**.")
 
 st.divider()
 
 # -----------------------
-# Input Fields
+# Input Features
 # -----------------------
 
 src_port = st.number_input("Source Port", value=443)
@@ -105,12 +124,12 @@ if st.button("Predict Attack", use_container_width=True):
 
     attack = label_encoder.inverse_transform(prediction)[0]
 
-    probability = model.predict_proba(sample).max() * 100
+    confidence = model.predict_proba(sample).max() * 100
 
-    st.success(f"### Predicted Attack : {attack}")
+    st.success(f"### Predicted Attack: {attack}")
 
-    st.info(f"Confidence : {probability:.2f}%")
+    st.info(f"Prediction Confidence: {confidence:.2f}%")
 
 st.divider()
 
-st.caption("Developed using Random Forest and Boruta Feature Selection")
+st.caption("Developed using Random Forest with Boruta Feature Selection")
